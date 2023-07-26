@@ -11,32 +11,23 @@ def file_generator(directory, number_of_files, size):
         os.mkdir(directory)
 
     for number in range(number_of_files):
-        file = open(f'{directory}/file_{number}.txt', 'w')
-        file.write(generate_random_string_for_file(size))
-        file.close()
+        with open(f'{directory}/file_{number}.txt', 'w') as file:
+            file.write(generate_random_string_for_file(size))
 
 
 def generate_random_string_for_file(size):
-    random_content_size = random.randint(size / 2, size)
+    random_content_size = random.randint(int(size / 2), size)
     return ''.join(random.choices(string.printable, k=random_content_size))
 
 
 def letter_counter_in_one_thread(directory, letter_to_find):
-    start_time = time.time()
-
     filelist = os.listdir(directory)
-    letters_in_file = 0
+    result = 0
     for current_file in filelist:
         with open(f'{directory}/{current_file}', 'r') as file:
-            for letter in file.read():
-                if letter_to_find == letter:
-                    letters_in_file += 1
+            result += file.read().count(letter_to_find)
 
-    end_time = time.time()
-    execution_time = end_time - start_time
-    print("letter_counter_in_one_thread working time = " + str(execution_time))
-
-    return letters_in_file
+    return result
 
 
 def letter_counter_in_n_threads(directory, letter_to_find, number_of_threads):
@@ -44,12 +35,8 @@ def letter_counter_in_n_threads(directory, letter_to_find, number_of_threads):
         result = 0
         for current_file in filelist:
             with open(f'{directory}/{current_file}', 'r') as file:
-                for letter in file.read():
-                    if letter_to_find == letter:
-                        result += 1
+                result = file.read().count(letter_to_find)
         letters_in_file.append(result)
-
-    start_time = time.time()
 
     threads = []
     filelist = os.listdir(directory)
@@ -64,18 +51,21 @@ def letter_counter_in_n_threads(directory, letter_to_find, number_of_threads):
     for i in threads:
         i.join()
 
-    end_time = time.time()
-    execution_time = end_time - start_time
-    print("letter_counter_in_n_threads working time = " + str(execution_time))
-
     return sum(letters_in_file)
 
+
+def count_function_time(function, *args, **kwargs):
+    start_time = time.time()
+    function(*args, **kwargs)
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"{function.__name__} working time = " + str(execution_time))
 
 
 directory_name = 'data'
 directory_path = f'./{directory_name}'
-file_numbers = 10
-file_size = 100
+file_numbers = 3
+file_size = 199
 symbol_to_find = '1'
 thread_numbers = 5
 
@@ -84,3 +74,6 @@ letters_in_file = []
 file_generator(directory_path, file_numbers, file_size)
 print("found symbols = " + str(letter_counter_in_one_thread(directory_path, symbol_to_find)))
 print("found symbols = " + str(letter_counter_in_n_threads(directory_path, symbol_to_find, thread_numbers)))
+count_function_time(letter_counter_in_one_thread, directory_path, symbol_to_find)
+count_function_time(letter_counter_in_n_threads, directory_path, symbol_to_find, thread_numbers)
+
