@@ -26,8 +26,8 @@ def letter_counter_in_one_thread(directory, letter_to_find):
 
     filelist = os.listdir(directory)
     letters_in_file = 0
-    for i in filelist:
-        with open(f'{directory}/{i}', 'r') as file:
+    for current_file in filelist:
+        with open(f'{directory}/{current_file}', 'r') as file:
             for letter in file.read():
                 if letter_to_find == letter:
                     letters_in_file += 1
@@ -40,6 +40,15 @@ def letter_counter_in_one_thread(directory, letter_to_find):
 
 
 def letter_counter_in_n_threads(directory, letter_to_find, number_of_threads):
+    def letter_counter_in_thread(directory, letter_to_find, letters_in_file, filelist):
+        result = 0
+        for current_file in filelist:
+            with open(f'{directory}/{current_file}', 'r') as file:
+                for letter in file.read():
+                    if letter_to_find == letter:
+                        result += 1
+        letters_in_file.append(result)
+
     start_time = time.time()
 
     threads = []
@@ -62,20 +71,11 @@ def letter_counter_in_n_threads(directory, letter_to_find, number_of_threads):
     return sum(letters_in_file)
 
 
-def letter_counter_in_thread(directory, letter_to_find, letters_in_file, filelist):
-    result = 0
-    for current_file in filelist:
-        with open(f'{directory}/{current_file}', 'r') as file:
-            for letter in file.read():
-                if letter_to_find == letter:
-                    result += 1
-    letters_in_file.append(result)
-
 
 directory_name = 'data'
 directory_path = f'./{directory_name}'
-file_numbers = 1000
-file_size = 100000
+file_numbers = 10
+file_size = 100
 symbol_to_find = '1'
 thread_numbers = 5
 
